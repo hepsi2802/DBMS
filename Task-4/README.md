@@ -1,9 +1,15 @@
 CREATE DATABASE supermarket_management;
+
 USE supermarket_management;
+
+
+
 CREATE TABLE Category (
     category_id INT PRIMARY KEY AUTO_INCREMENT,
     category_name VARCHAR(100) NOT NULL
 );
+
+
 
 CREATE TABLE Product (
     product_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -13,6 +19,9 @@ CREATE TABLE Product (
     stock INT,
     FOREIGN KEY (category_id) REFERENCES Category(category_id)
 );
+
+
+
 INSERT INTO Category (category_name)
 VALUES
 ('Fruits'),
@@ -20,6 +29,9 @@ VALUES
 ('Dairy'),
 ('Beverages'),
 ('Snacks');
+
+
+
 INSERT INTO Product (product_name, category_id, price, stock)
 VALUES
 ('Apple', 1, 120.00, 50),
@@ -32,18 +44,37 @@ VALUES
 ('Orange Juice', 4, 100.00, 30),
 ('Potato Chips', 5, 50.00, 70),
 ('Biscuits', 5, 30.00, 90);
+
+
+
 SELECT * FROM Category;
+
+
+-- Display Products
 SELECT * FROM Product;
+
+
 
 UPDATE Product
 SET price = 130.00
 WHERE product_name = 'Apple';
 
+
+
 SELECT * FROM Product
 WHERE product_name = 'Apple';
+
+
+
 DELETE FROM Product
 WHERE product_name = 'Biscuits';
+
+
+
 SELECT * FROM Product;
+
+
+
 SELECT 
     c.category_name,
     p.product_name,
@@ -53,6 +84,9 @@ FROM Category c
 JOIN Product p
 ON c.category_id = p.category_id
 ORDER BY c.category_name;
+
+
+
 SELECT 
     c.category_name,
     COUNT(p.product_id) AS total_products
@@ -60,6 +94,9 @@ FROM Category c
 LEFT JOIN Product p
 ON c.category_id = p.category_id
 GROUP BY c.category_id, c.category_name;
+
+
+
 SELECT 
     c.category_name,
     SUM(p.stock) AS total_stock
@@ -67,6 +104,9 @@ FROM Category c
 JOIN Product p
 ON c.category_id = p.category_id
 GROUP BY c.category_id, c.category_name;
+
+
+
 SELECT 
     c.category_name,
     AVG(p.price) AS average_price
@@ -74,7 +114,6 @@ FROM Category c
 JOIN Product p
 ON c.category_id = p.category_id
 GROUP BY c.category_id, c.category_name;
-
 
 <img width="1600" height="847" alt="WhatsApp Image 2026-09-02 at 2 19 54 PM" src="https://github.com/user-attachments/assets/5139d01c-eb17-4309-b3b0-1133bdbdcd6f" />
 <img width="1600" height="848" alt="WhatsApp Image 2026-09-02 at 2 19 31 PM" src="https://github.com/user-attachments/assets/2755e97f-510e-4dde-b3a5-8585b2e39a71" />
