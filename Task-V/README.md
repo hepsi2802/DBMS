@@ -102,15 +102,11 @@ JOIN Payment p
 ON c.customer_id = p.customer_id
 GROUP BY c.customer_id, c.customer_name;
 
-<img width="1600" height="852" alt="WhatsApp Image 2026-09-03 at 9 05 57 AM" src="https://github.com/user-attachments/assets/8edab3da-7eae-43b4-beb8-52a41f0bb5a6" />
+<img width="1600" height="852" alt="WhatsApp Image 2026-09-03 at 9 05 57 AM" src="https://github.com/user-attachments/assets/14f44d85-4b43-4b0e-a9d4-ab5ec45a7a65" />
+<img width="1600" height="851" alt="WhatsApp Image 2026-09-03 at 9 06 18 AM" src="https://github.com/user-attachments/assets/d9a56153-7e85-4ed8-ab08-58bb880c2b8e" />
 
-<img width="1600" height="848" alt="WhatsApp Image 2026-09-03 at 9 07 30 AM" src="https://github.com/user-attachments/assets/9607ce3e-50de-4f37-811d-6a91bb67c6e7" />
-<img width="1600" height="848" alt="WhatsApp Image 2026-09-03 at 9 07 12 AM" src="https://github.com/user-attachments/assets/c4b8834e-69df-4b38-a6df-07a77cd22474" />
+<img width="1600" height="851" alt="WhatsApp Image 2026-09-03 at 9 06 52 AM" src="https://github.com/user-attachments/assets/353e4ebb-8aa4-4511-9687-a61ad86bffbb" />
+<img width="1600" height="848" alt="WhatsApp Image 2026-09-03 at 9 07 12 AM" src="https://github.com/user-attachments/assets/99bb3332-b892-41d0-88b8-918ca13344be" />
 
-<img width="1600" height="851" alt="WhatsApp Image 2026-09-03 at 9 06 18 AM" src="https://github.com/user-attachments/assets/ec6629b4-c42a-4562-96d1-21e90ee19300" />
-<img width="1600" height="851" alt="WhatsApp Image 2026-09-03 at 9 06 52 AM" src="https://github.com/user-attachments/assets/9deff0a5-494c-4ad7-ac06-28b5e083bd6c" />
-<img width="1600" height="852" alt="WhatsApp Image 2026-09-03 at 9 05 57 AM" src="https://github.com/user-attachments/assets/7a46472f-0368-4682-9f43-4152965fdb3a" />
-
-
-
-
+<img width="1600" height="848" alt="WhatsApp Image 2026-09-03 at 9 07 30 AM" src="https://github.com/user-attachments/assets/4b0220a2-7345-4309-9b4c-4f7d6121fdbf" />
+<img width="1600" height="848" alt="WhatsApp Image 2026-09-03 at 9 08 00 AM" src="https://github.com/user-attachments/assets/dc6ffa00-ce24-4e3c-932f-63ca897770ec" />
