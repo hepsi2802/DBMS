@@ -1,10 +1,10 @@
-CREATE DATABASE order_management;
+CREATE DATABASE seller_inventory_management;
 
-USE order_management;
+USE seller_inventory_management;
 
-CREATE TABLE Customer (
-    customer_id INT PRIMARY KEY AUTO_INCREMENT,
-    customer_name VARCHAR(100) NOT NULL,
+CREATE TABLE Seller (
+    seller_id INT PRIMARY KEY AUTO_INCREMENT,
+    seller_name VARCHAR(100) NOT NULL,
     email VARCHAR(100),
     phone VARCHAR(15)
 );
@@ -15,118 +15,106 @@ CREATE TABLE Product (
     price DECIMAL(10,2)
 );
 
-CREATE TABLE Orders (
-    order_id INT PRIMARY KEY AUTO_INCREMENT,
-    customer_id INT,
-    order_date DATE,
-    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
-);
-
-CREATE TABLE Order_Details (
-    order_detail_id INT PRIMARY KEY AUTO_INCREMENT,
-    order_id INT,
+CREATE TABLE Inventory (
+    inventory_id INT PRIMARY KEY AUTO_INCREMENT,
+    seller_id INT,
     product_id INT,
-    quantity INT,
-    total_amount DECIMAL(10,2),
-    FOREIGN KEY (order_id) REFERENCES Orders(order_id),
+    stock INT NOT NULL,
+    status VARCHAR(20),
+    FOREIGN KEY (seller_id) REFERENCES Seller(seller_id),
     FOREIGN KEY (product_id) REFERENCES Product(product_id)
 );
 
-INSERT INTO Customer (customer_name, email, phone)
+INSERT INTO Seller (seller_name, email, phone)
 VALUES
-('Arun Kumar', 'arun@gmail.com', '9876543210'),
+('Ravi Kumar', 'ravi@gmail.com', '9876543210'),
 ('Priya Sharma', 'priya@gmail.com', '9876543211'),
-('Rahul Raj', 'rahul@gmail.com', '9876543212'),
-('Divya Kumar', 'divya@gmail.com', '9876543213');
+('Arun Kumar', 'arun@gmail.com', '9876543212'),
+('Divya Raj', 'divya@gmail.com', '9876543213');
 
 INSERT INTO Product (product_name, price)
 VALUES
 ('Laptop', 55000.00),
 ('Mobile Phone', 25000.00),
 ('Keyboard', 1200.00),
+('Headphones', 2000.00),
 ('Mouse', 800.00),
-('Headphones', 2000.00);
+('Monitor', 15000.00);
 
-INSERT INTO Orders (customer_id, order_date)
+INSERT INTO Inventory (seller_id, product_id, stock, status)
 VALUES
-(1, '2026-08-01'),
-(2, '2026-08-02'),
-(3, '2026-08-03'),
-(1, '2026-08-05');
+(1, 1, 10, 'Available'),
+(1, 3, 25, 'Available'),
+(2, 2, 0, 'Unavailable'),
+(2, 4, 15, 'Available'),
+(3, 5, 30, 'Available'),
+(3, 6, 0, 'Unavailable'),
+(4, 2, 12, 'Available');
 
-INSERT INTO Order_Details (order_id, product_id, quantity, total_amount)
-VALUES
-(1, 1, 1, 55000.00),
-(1, 4, 2, 1600.00),
-(2, 2, 1, 25000.00),
-(2, 5, 1, 2000.00),
-(3, 3, 2, 2400.00),
-(4, 2, 1, 25000.00);
-
-SELECT * FROM Customer;
+SELECT * FROM Seller;
 
 SELECT * FROM Product;
 
-SELECT * FROM Orders;
+SELECT * FROM Inventory;
 
-SELECT * FROM Order_Details;
+UPDATE Inventory
+SET stock = 20,
+    status = 'Available'
+WHERE product_id = 1;
 
-UPDATE Orders
-SET order_date = '2026-08-06'
-WHERE order_id = 4;
+SELECT * FROM Inventory
+WHERE product_id = 1;
 
-UPDATE Order_Details
-SET quantity = 2,
-    total_amount = 50000.00
-WHERE order_detail_id = 6;
+SELECT 
+    p.product_name,
+    i.stock,
+    i.status
+FROM Product p
+JOIN Inventory i
+ON p.product_id = i.product_id
+WHERE i.status = 'Available';
 
-SELECT
-    c.customer_id,
-    c.customer_name,
-    c.email,
-    c.phone,
-    o.order_id,
-    o.order_date,
-    p.product_id,
+SELECT 
+    p.product_name,
+    i.stock,
+    i.status
+FROM Product p
+JOIN Inventory i
+ON p.product_id = i.product_id
+WHERE i.status = 'Unavailable';
+
+SELECT 
+    s.seller_name,
     p.product_name,
     p.price,
-    od.quantity,
-    od.total_amount
-FROM Customer c
-JOIN Orders o
-ON c.customer_id = o.customer_id
-JOIN Order_Details od
-ON o.order_id = od.order_id
+    i.stock,
+    i.status
+FROM Seller s
+JOIN Inventory i
+ON s.seller_id = i.seller_id
 JOIN Product p
-ON od.product_id = p.product_id;
+ON i.product_id = p.product_id;
 
-SELECT
-    c.customer_name,
-    o.order_id,
-    o.order_date,
+SELECT 
     p.product_name,
-    od.quantity,
-    od.total_amount
-FROM Customer c
-JOIN Orders o
-ON c.customer_id = o.customer_id
-JOIN Order_Details od
-ON o.order_id = od.order_id
-JOIN Product p
-ON od.product_id = p.product_id
-ORDER BY c.customer_name;
+    SUM(i.stock) AS total_stock,
+    CASE
+        WHEN SUM(i.stock) > 0 THEN 'Available'
+        ELSE 'Unavailable'
+    END AS inventory_status
+FROM Product p
+LEFT JOIN Inventory i
+ON p.product_id = i.product_id
+GROUP BY p.product_id, p.product_name;
 
-SELECT
-    c.customer_name,
-    COUNT(o.order_id) AS total_orders,
-    SUM(od.total_amount) AS total_spent
-FROM Customer c
-JOIN Orders o
-ON c.customer_id = o.customer_id
-JOIN Order_Details od
-ON o.order_id = od.order_id
-GROUP BY c.customer_id, c.customer_name;
-
+SELECT 
+    s.seller_name,
+    COUNT(i.product_id) AS total_products,
+    SUM(i.stock) AS total_stock
+FROM Seller s
+LEFT JOIN Inventory i
+ON s.seller_id = i.seller_id
+GROUP BY s.seller_id, s.seller_name;
 
 <img width="1600" height="848" alt="WhatsApp Image 2026-09-02 at 9 02 10 PM" src="https://github.com/user-attachments/assets/39453431-0af3-4652-ad08-06f0f566d649" />
 <img width="1600" height="848" alt="WhatsApp Image 2026-09-02 at 9 03 32 PM" src="https://github.com/user-attachments/assets/e5c1c18e-1ecc-4fa3-8a52-6f874a4d173e" />
