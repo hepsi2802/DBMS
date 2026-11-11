@@ -1,0 +1,133 @@
+USE Join_Analysis_Final;
+
+SELECT * FROM ja_customers;
+SELECT * FROM ja_products;
+SELECT * FROM ja_orders;
+SELECT * FROM ja_order_items;
+SELECT * FROM ja_payments;
+
+SELECT
+    COUNT(*) AS total_products,
+    SUM(price) AS total_product_value,
+    AVG(price) AS average_product_price,
+    MIN(price) AS minimum_product_price,
+    MAX(price) AS maximum_product_price
+FROM ja_products;
+
+SELECT
+    COUNT(DISTINCT o.order_id) AS total_orders,
+    SUM(oi.quantity) AS total_items_sold,
+    SUM(oi.quantity * p.price) AS total_sales,
+    AVG(oi.quantity * p.price) AS average_item_line_value,
+    MIN(oi.quantity * p.price) AS minimum_line_value,
+    MAX(oi.quantity * p.price) AS maximum_line_value
+FROM ja_orders o
+JOIN ja_order_items oi
+    ON o.order_id = oi.order_id
+JOIN ja_products p
+    ON oi.product_id = p.product_id;
+
+SELECT
+    c.customer_id,
+    c.customer_name,
+    c.city,
+    SUM(oi.quantity * p.price) AS total_purchase_amount
+FROM ja_customers c
+JOIN ja_orders o
+    ON c.customer_id = o.customer_id
+JOIN ja_order_items oi
+    ON o.order_id = oi.order_id
+JOIN ja_products p
+    ON oi.product_id = p.product_id
+GROUP BY
+    c.customer_id,
+    c.customer_name,
+    c.city
+ORDER BY total_purchase_amount DESC;
+
+SELECT
+    p.product_id,
+    p.product_name,
+    p.category,
+    SUM(oi.quantity) AS total_quantity_sold,
+    SUM(oi.quantity * p.price) AS total_revenue
+FROM ja_products p
+JOIN ja_order_items oi
+    ON p.product_id = oi.product_id
+GROUP BY
+    p.product_id,
+    p.product_name,
+    p.category
+ORDER BY total_quantity_sold DESC;
+
+SELECT
+    p.category,
+    COUNT(DISTINCT o.order_id) AS total_orders,
+    SUM(oi.quantity) AS total_quantity_sold,
+    SUM(oi.quantity * p.price) AS category_sales,
+    AVG(p.price) AS average_product_price
+FROM ja_products p
+JOIN ja_order_items oi
+    ON p.product_id = oi.product_id
+JOIN ja_orders o
+    ON oi.order_id = o.order_id
+GROUP BY p.category
+ORDER BY category_sales DESC;
+
+
+-- =====================================================
+-- 7. CUSTOMER-WISE ORDER ANALYSIS
+-- =====================================================
+
+SELECT
+    c.customer_name,
+    COUNT(DISTINCT o.order_id) AS total_orders,
+    SUM(oi.quantity) AS total_products_purchased,
+    SUM(oi.quantity * p.price) AS total_spending,
+    AVG(oi.quantity * p.price) AS average_order_item_value
+FROM ja_customers c
+JOIN ja_orders o
+    ON c.customer_id = o.customer_id
+JOIN ja_order_items oi
+    ON o.order_id = oi.order_id
+JOIN ja_products p
+    ON oi.product_id = p.product_id
+GROUP BY c.customer_id, c.customer_name
+ORDER BY total_spending DESC;
+
+SELECT
+    MONTH(o.order_date) AS sales_month,
+    MONTHNAME(o.order_date) AS month_name,
+    SUM(oi.quantity * p.price) AS monthly_sales,
+    COUNT(DISTINCT o.order_id) AS total_orders
+FROM ja_orders o
+JOIN ja_order_items oi
+    ON o.order_id = oi.order_id
+JOIN ja_products p
+    ON oi.product_id = p.product_id
+GROUP BY
+    MONTH(o.order_date),
+    MONTHNAME(o.order_date)
+ORDER BY sales_month;
+
+SELECT
+    payment_method,
+    COUNT(*) AS total_transactions,
+    SUM(amount) AS total_payment_amount,
+    AVG(amount) AS average_payment_amount,
+    MIN(amount) AS minimum_payment,
+    MAX(amount) AS maximum_payment
+FROM ja_payments
+GROUP BY payment_method;
+
+SELECT
+    COUNT(DISTINCT o.order_id) AS total_orders,
+    COUNT(DISTINCT o.customer_id) AS total_customers,
+    SUM(oi.quantity) AS total_products_sold,
+    SUM(oi.quantity * p.price) AS total_revenue,
+    AVG(oi.quantity * p.price) AS average_sales_value
+FROM ja_orders o
+JOIN ja_order_items oi
+    ON o.order_id = oi.order_id
+JOIN ja_products p
+    ON oi.product_id = p.product_id;
