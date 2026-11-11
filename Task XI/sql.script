@@ -1,0 +1,191 @@
+USE Join_Analysis_Final;
+
+CREATE OR REPLACE VIEW ja_order_report AS
+SELECT
+    o.order_id,
+    c.customer_name,
+    o.order_date,
+    o.order_status,
+    p.product_name,
+    oi.quantity,
+    p.price,
+    (oi.quantity * p.price) AS item_total,
+    pay.payment_method,
+    pay.payment_status
+FROM ja_orders o
+JOIN ja_customers c
+    ON o.customer_id = c.customer_id
+JOIN ja_order_items oi
+    ON o.order_id = oi.order_id
+JOIN ja_products p
+    ON oi.product_id = p.product_id
+LEFT JOIN ja_payments pay
+    ON o.order_id = pay.order_id;
+
+CREATE OR REPLACE VIEW ja_customer_sales AS
+SELECT
+    c.customer_id,
+    c.customer_name,
+    COUNT(DISTINCT o.order_id) AS total_orders,
+    COALESCE(SUM(oi.quantity * p.price), 0) AS total_purchase
+FROM ja_customers c
+LEFT JOIN ja_orders o
+    ON c.customer_id = o.customer_id
+LEFT JOIN ja_order_items oi
+    ON o.order_id = oi.order_id
+LEFT JOIN ja_products p
+    ON oi.product_id = p.product_id
+GROUP BY c.customer_id, c.customer_name;
+
+CREATE OR REPLACE VIEW ja_product_sales AS
+SELECT
+    p.product_id,
+    p.product_name,
+    p.category,
+    COALESCE(SUM(oi.quantity), 0) AS units_sold,
+    COALESCE(SUM(oi.quantity * p.price), 0) AS total_sales
+FROM ja_products p
+LEFT JOIN ja_order_items oi
+    ON p.product_id = oi.product_id
+GROUP BY p.product_id, p.product_name, p.category;
+
+DROP FUNCTION IF EXISTS ja_order_total;
+
+DELIMITER //
+
+CREATE FUNCTION ja_order_total(p_order_id INT)
+RETURNS DECIMAL(12,2)
+DETERMINISTIC
+READS SQL DATA
+BEGIN
+    DECLARE v_total DECIMAL(12,2);
+
+    SELECT COALESCE(SUM(oi.quantity * p.price), 0)
+    INTO v_total
+    FROM ja_order_items oi
+    JOIN ja_products p
+        ON oi.product_id = p.product_id
+    WHERE oi.order_id = p_order_id;
+
+    RETURN v_total;
+END //
+
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS ja_process_order;
+
+DELIMITER //
+
+CREATE PROCEDURE ja_process_order(
+    IN p_customer_id INT,
+    IN p_product_id INT,
+    IN p_quantity INT,
+    IN p_payment_method VARCHAR(50)
+)
+BEGIN
+    DECLARE v_order_id INT;
+    DECLARE v_price DECIMAL(10,2);
+    DECLARE v_amount DECIMAL(12,2);
+    DECLARE v_customer_count INT;
+    DECLARE v_product_count INT;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    SELECT COUNT(*)
+    INTO v_customer_count
+    FROM ja_customers
+    WHERE customer_id = p_customer_id;
+
+    IF v_customer_count = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Customer does not exist';
+    END IF;
+
+    SELECT COUNT(*)
+    INTO v_product_count
+    FROM ja_products
+    WHERE product_id = p_product_id;
+
+    IF v_product_count = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Product does not exist';
+    END IF;
+
+    -- Check quantity
+    IF p_quantity <= 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Quantity must be greater than zero';
+    END IF;
+
+    SELECT price
+    INTO v_price
+    FROM ja_products
+    WHERE product_id = p_product_id;
+
+    SET v_amount = v_price * p_quantity;
+
+    INSERT INTO ja_orders
+        (customer_id, order_date, order_status)
+    VALUES
+        (p_customer_id, CURDATE(), 'Processing');
+
+    SET v_order_id = LAST_INSERT_ID();
+
+
+    INSERT INTO ja_order_items
+        (order_id, product_id, quantity)
+    VALUES
+        (v_order_id, p_product_id, p_quantity);
+
+    -- Insert payment
+    INSERT INTO ja_payments
+        (order_id, payment_date, amount,
+         payment_method, payment_status)
+    VALUES
+        (v_order_id, CURDATE(), v_amount,
+         p_payment_method, 'Paid');
+
+    COMMIT;
+
+    SELECT
+        v_order_id AS new_order_id,
+        v_amount AS total_amount,
+        'Order processed successfully' AS message;
+END //
+
+DELIMITER ;
+
+SELECT * FROM ja_order_report;
+
+SELECT * FROM ja_customer_sales;
+
+SELECT * FROM ja_product_sales;
+
+SELECT ja_order_total(1001) AS order_total;
+
+
+CALL ja_process_order(5, 4, 2, 'UPI');
+
+SELECT * FROM ja_order_report
+ORDER BY order_id DESC;
+
+SELECT * FROM ja_customer_sales
+ORDER BY total_purchase DESC;
+
+SELECT * FROM ja_product_sales
+ORDER BY total_sales DESC;
+
+SHOW FULL TABLES
+WHERE Table_type = 'VIEW';
+
+SHOW FUNCTION STATUS
+WHERE Db = 'Join_Analysis_Final';
+
+SHOW PROCEDURE STATUS
+WHERE Db = 'Join_Analysis_Final';
